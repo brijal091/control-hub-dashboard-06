@@ -45,9 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       // Use environment variable for API URL
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/arduino';
-      const loginUrl = apiBaseUrl.replace('/arduino', ''); // Remove '/arduino' if present for auth endpoint
-      
-      const response = await fetch(`${loginUrl}/auth/login`, {
+      const response = await fetch(`${apiBaseUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
