@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (username: string, password: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:8000/login', {
+      const response = await fetch('http://localhost:3000/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,9 +73,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userData);
       
       // Navigate based on role
-      if (data.userDetails.userRole === 'superadmin') {
+      if (data.userDetails.userRole === '1') {
         navigate('/admin/organizations');
-      } else if (data.userDetails.userRole === 'orgadmin') {
+      } else if (data.userDetails.userRole === '2') {
         navigate('/admin/users');
       } else {
         navigate('/dashboard');

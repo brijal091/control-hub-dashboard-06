@@ -13,11 +13,11 @@ const Unauthorized: React.FC = () => {
     if (!user) return '/login';
     
     switch (user.userRole) {
-      case 'superadmin':
+      case '1':
         return '/admin/organizations';
-      case 'orgadmin':
+      case '2':
         return '/admin/users';
-      case 'user':
+      case '3':
         return '/dashboard';
       default:
         return '/login';

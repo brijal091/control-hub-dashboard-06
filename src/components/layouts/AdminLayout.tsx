@@ -21,8 +21,8 @@ const AdminLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
-  const isSuperAdmin = user?.userRole === 'superadmin';
-  const isOrgAdmin = user?.userRole === 'orgadmin';
+  const isSuperAdmin = user?.userRole === '1';
+  const isOrgAdmin = user?.userRole === '2';
 
   const getInitials = () => {
     return user?.userName?.substring(0, 2).toUpperCase() || 'US';

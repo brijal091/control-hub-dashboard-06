@@ -65,7 +65,7 @@ const SettingsPage: React.FC = () => {
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
-          {user?.userRole === 'superadmin' && (
+          {user?.userRole === '1' && (
             <TabsTrigger value="advanced">Advanced</TabsTrigger>
           )}
         </TabsList>
@@ -171,7 +171,7 @@ const SettingsPage: React.FC = () => {
           </Card>
         </TabsContent>
         
-        {user?.userRole === 'superadmin' && (
+        {user?.userRole === '1' && (
           <TabsContent value="advanced" className="space-y-6">
             <Card>
               <CardHeader>

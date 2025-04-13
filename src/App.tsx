@@ -36,7 +36,7 @@ const App = () => (
             
             {/* User routes */}
             <Route path="/" element={
-              <ProtectedRoute allowedRoles={['superadmin', 'orgadmin', 'user']}>
+              <ProtectedRoute allowedRoles={['1', '2', '3']}>
                 <DashboardLayout />
               </ProtectedRoute>
             }>
@@ -46,17 +46,17 @@ const App = () => (
             
             {/* Admin routes */}
             <Route path="/admin" element={
-              <ProtectedRoute allowedRoles={['superadmin', 'orgadmin']}>
+              <ProtectedRoute allowedRoles={['1', '2']}>
                 <AdminLayout />
               </ProtectedRoute>
             }>
               <Route path="organizations" element={
-                <ProtectedRoute allowedRoles={['superadmin']}>
+                <ProtectedRoute allowedRoles={['1']}>
                   <OrganizationsPage />
                 </ProtectedRoute>
               } />
               <Route path="users" element={
-                <ProtectedRoute allowedRoles={['superadmin', 'orgadmin']}>
+                <ProtectedRoute allowedRoles={['1', '2']}>
                   <UsersPage />
                 </ProtectedRoute>
               } />

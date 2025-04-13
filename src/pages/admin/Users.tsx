@@ -27,9 +27,9 @@ import { Organization, User as UserType, UserRole } from '@/types';
 
 // Mock data - would be replaced with API calls
 const mockUsers: UserType[] = [
-  { id: '1', userName: 'john.doe', userRole: 'orgadmin', organizationId: '1', email: 'john@example.com', firstName: 'John', lastName: 'Doe', lastLogin: '2023-10-15' },
-  { id: '2', userName: 'jane.smith', userRole: 'user', organizationId: '1', email: 'jane@example.com', firstName: 'Jane', lastName: 'Smith', lastLogin: '2023-10-20' },
-  { id: '3', userName: 'mike.wilson', userRole: 'user', organizationId: '2', email: 'mike@example.com', firstName: 'Mike', lastName: 'Wilson', lastLogin: '2023-10-18' },
+  { id: '1', userName: 'john.doe', userRole: '2', organizationId: '1', email: 'john@example.com', firstName: 'John', lastName: 'Doe', lastLogin: '2023-10-15' },
+  { id: '2', userName: 'jane.smith', userRole: '3', organizationId: '1', email: 'jane@example.com', firstName: 'Jane', lastName: 'Smith', lastLogin: '2023-10-20' },
+  { id: '3', userName: 'mike.wilson', userRole: '3', organizationId: '2', email: 'mike@example.com', firstName: 'Mike', lastName: 'Wilson', lastLogin: '2023-10-18' },
 ];
 
 const mockOrganizations: Organization[] = [
@@ -40,7 +40,7 @@ const mockOrganizations: Organization[] = [
 
 const UsersPage: React.FC = () => {
   const { user } = useAuth();
-  const isSuperAdmin = user?.userRole === 'superadmin';
+  const isSuperAdmin = user?.userRole === '1';
   
   const [users, setUsers] = useState<UserType[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -53,7 +53,7 @@ const UsersPage: React.FC = () => {
     email: '',
     firstName: '',
     lastName: '',
-    userRole: 'user' as UserRole,
+    userRole: '3' as UserRole,
     organizationId: '',
     password: '',
   });
@@ -117,7 +117,7 @@ const UsersPage: React.FC = () => {
         email: '',
         firstName: '',
         lastName: '',
-        userRole: 'user',
+        userRole: '3',
         organizationId: selectedOrgId,
         password: '',
       });
@@ -291,11 +291,11 @@ const UsersPage: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
-                        user.userRole === 'orgadmin' 
+                        user.userRole === '2' 
                           ? 'bg-primary/20 text-primary' 
                           : 'bg-muted text-muted-foreground'
                       }`}>
-                        {user.userRole === 'orgadmin' ? 'Admin' : 'User'}
+                        {user.userRole === '2' ? 'Admin' : 'User'}
                       </span>
                     </TableCell>
                     {isSuperAdmin && !selectedOrgId && (
@@ -420,15 +420,15 @@ const UsersPage: React.FC = () => {
                 <Select 
                   value={formData.userRole}
                   onValueChange={(value) => handleSelectChange('userRole', value)}
-                  disabled={user?.userRole !== 'superadmin' && formData.userRole === 'orgadmin'}
+                  disabled={user?.userRole !== '1' && formData.userRole === '2'}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
                   <SelectContent>
                     {/* Only super admin can create org admins */}
-                    {user?.userRole === 'superadmin' && (
-                      <SelectItem value="orgadmin">Organization Admin</SelectItem>
+                    {user?.userRole === '1' && (
+                      <SelectItem value="2">Organization Admin</SelectItem>
                     )}
                     <SelectItem value="user">User</SelectItem>
                   </SelectContent>

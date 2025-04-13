@@ -12,9 +12,9 @@ const Index: React.FC = () => {
     if (!isLoading) {
       if (isAuthenticated) {
         // Redirect based on user role
-        if (user?.userRole === 'superadmin') {
+        if (user?.userRole === '1') {
           navigate('/admin/organizations');
-        } else if (user?.userRole === 'orgadmin') {
+        } else if (user?.userRole === '2') {
           navigate('/admin/users');
         } else {
           navigate('/dashboard');

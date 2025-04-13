@@ -1,6 +1,6 @@
 
 // User types
-export type UserRole = 'superadmin' | 'orgadmin' | 'user';
+export type UserRole = '1' | '2' | '3';
 
 export interface User {
   id: string;
