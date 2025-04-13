@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,92 +24,63 @@ import { Plus, MoreHorizontal, Pencil, Trash2, Building2, Loader2 } from 'lucide
 import { toast } from 'sonner';
 import { Organization } from '@/types';
 import { organizationsApi } from '@/services/api';
-
-// Mock data for fallback if API fails
-const mockOrganizations: Organization[] = [
-  { 
-    id: 1, 
-    orgname: 'Tech Solutions Inc', 
-    rowstate: '1',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  { 
-    id: 2, 
-    orgname: 'IoT Innovations', 
-    rowstate: '1',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  { 
-    id: 3, 
-    orgname: 'Smart Home Systems', 
-    rowstate: '0',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const OrganizationsPage: React.FC = () => {
-  const { user, token } = useAuth();
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
   const [formData, setFormData] = useState({ name: '' });
 
-  const createOgranization = async () => {
-    try {
-      setIsLoading(true);
-      setTimeout(async () => {
-        try {
-          const res = await organizationsApi.create({orgname: formData.name});
-          if(res)
-          fetchOrganizations()
-        } catch (error) {
-          console.error('Error fetching organizations:', error);
-          toast.error('Failed to fetch organizations, using mock data');
-          // Fall back to mock data
-          setOrganizations(mockOrganizations);
-        } finally {
-          setIsLoading(false);
-        }
-      }, 500);
-    } catch (error) {
-      console.error('Error in fetchOrganizations:', error);
-      toast.error('Failed to fetch organizations');
-      setOrganizations(mockOrganizations);
-      setIsLoading(false);
-    }
-  };
+  // Fetch organizations using React Query
+  const { 
+    data: organizations = [], 
+    isLoading,
+    refetch
+  } = useQuery({
+    queryKey: ['organizations'],
+    queryFn: () => organizationsApi.getAll(),
+    enabled: !!user
+  });
 
-  const fetchOrganizations = async () => {
-    try {
-      setIsLoading(true);
-      // Delay the API call slightly to ensure token is available
-      setTimeout(async () => {
-        try {
-          const data = await organizationsApi.getAll();
-          setOrganizations(data);
-        } catch (error) {
-          console.error('Error fetching organizations:', error);
-          toast.error('Failed to fetch organizations, using mock data');
-          // Fall back to mock data
-          setOrganizations(mockOrganizations);
-        } finally {
-          setIsLoading(false);
-        }
-      }, 500);
-    } catch (error) {
-      console.error('Error in fetchOrganizations:', error);
-      toast.error('Failed to fetch organizations');
-      setOrganizations(mockOrganizations);
-      setIsLoading(false);
+  // Create organization mutation
+  const createOrgMutation = useMutation({
+    mutationFn: (data: {orgname: string}) => organizationsApi.create(data),
+    onSuccess: () => {
+      toast.success('Organization created successfully');
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      handleCloseDialog();
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to create organization: ${error.message}`);
     }
-  };
-  useEffect(() => {
-    fetchOrganizations();
-  }, [token]);
+  });
+
+  // Update organization mutation
+  const updateOrgMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string, data: any }) => organizationsApi.update(id, data),
+    onSuccess: () => {
+      toast.success('Organization updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      handleCloseDialog();
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update organization: ${error.message}`);
+    }
+  });
+
+  // Delete organization mutation
+  const deleteOrgMutation = useMutation({
+    mutationFn: (id: string) => organizationsApi.delete(id),
+    onSuccess: () => {
+      toast.success('Organization deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['organizations'] });
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to delete organization: ${error.message}`);
+    }
+  });
 
   const handleOpenDialog = (org?: Organization) => {
     if (org) {
@@ -142,18 +113,19 @@ const OrganizationsPage: React.FC = () => {
     }
     
     if (currentOrg) {
-      toast.success('Organization updated successfully');
+      // Update organization
+      updateOrgMutation.mutate({
+        id: currentOrg.id.toString(),
+        data: { orgname: formData.name }
+      });
     } else {
-      createOgranization()
-      toast.success('Organization created successfully');
+      // Create organization
+      createOrgMutation.mutate({ orgname: formData.name });
     }
-    
-    handleCloseDialog();
   };
 
   const handleDeleteOrganization = (id: number) => {
-    // In a real app, this would be an API call
-    toast.success('Organization deleted successfully');
+    deleteOrgMutation.mutate(id.toString());
   };
 
   const formatDate = (dateString: string) => {
@@ -176,7 +148,6 @@ const OrganizationsPage: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                {/* <TableHead className="hidden md:table-cell">Status</TableHead> */}
                 <TableHead className="hidden md:table-cell">Created</TableHead>
                 <TableHead className="hidden md:table-cell">Updated</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
@@ -207,13 +178,6 @@ const OrganizationsPage: React.FC = () => {
                         <span>{org.orgname}</span>
                       </div>
                     </TableCell>
-                    {/* <TableCell className="hidden md:table-cell">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        org.rowstate === '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {org.rowstate === '1' ? 'Active' : 'Inactive'}
-                      </span>
-                    </TableCell> */}
                     <TableCell className="hidden md:table-cell">
                       {formatDate(org.createdAt)}
                     </TableCell>

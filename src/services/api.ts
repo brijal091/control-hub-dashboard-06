@@ -88,18 +88,22 @@ export const organizationsApi = {
 
 // User API calls
 export const usersApi = {
-  getAll: (orgId?: string) => apiRequest<{ users: any[] }>(`/users${orgId ? `?orgId=${orgId}` : ''}`),
-  getById: (id: string) => apiRequest<{ user: any }>(`/users/${id}`),
-  create: (data: any) => apiRequest<{ user: any }>('/users', { 
+  getAll: (orgId?: string) => apiRequest<any>(`/users${orgId ? `?orgId=${orgId}` : ''}`),
+  getById: (id: string) => apiRequest<any>(`/users/${id}`),
+  create: (data: any) => apiRequest<any>('/users/create', { 
     method: 'POST', 
     body: data 
   }),
-  update: (id: string, data: any) => apiRequest<{ user: any }>(`/users/${id}`, { 
+  update: (id: string, data: any) => apiRequest<any>(`/users/${id}`, { 
     method: 'PUT', 
     body: data 
   }),
-  delete: (id: string) => apiRequest<{ success: boolean }>(`/users/${id}`, { 
+  delete: (id: string) => apiRequest<any>(`/users/${id}`, { 
     method: 'DELETE' 
+  }),
+  updateStatus: (id: string, status: boolean) => apiRequest<any>(`/users/${id}/status`, { 
+    method: 'PUT', 
+    body: { status } 
   }),
 };
 

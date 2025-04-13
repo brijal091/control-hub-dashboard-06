@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -62,11 +62,11 @@ const UsersPage: React.FC = () => {
     refetch: refetchUsers
   } = useQuery({
     queryKey: ['users', selectedOrgId],
-    queryFn: () => usersApi.getAll(selectedOrgId === 'all' ? '' : selectedOrgId),
+    queryFn: () => usersApi.getAll(selectedOrgId === 'all' ? undefined : selectedOrgId),
     enabled: !!user
   });
 
-  const users = usersData?.users || [];
+  const users = usersData?.users || usersData || [];
 
   // Create user mutation
   const createUserMutation = useMutation({
@@ -110,12 +110,12 @@ const UsersPage: React.FC = () => {
     if (user) {
       setCurrentUser(user);
       setFormData({
-        userName: user.userName,
+        userName: user.userName || user.username || '',
         email: user.email || '',
         firstName: user.firstName || '',
         lastName: user.lastName || '',
-        userRole: user.userRole,
-        organizationId: user.organizationId,
+        userRole: user.userRole || user.role || '3',
+        organizationId: user.organizationId || user.orgId?.toString() || '',
         password: '', // We don't set the password for edits
       });
     } else {
@@ -169,12 +169,12 @@ const UsersPage: React.FC = () => {
       updateUserMutation.mutate({
         id: currentUser.id,
         data: {
-          userName: formData.userName,
+          username: formData.userName,
           email: formData.email,
           firstName: formData.firstName,
           lastName: formData.lastName,
-          userRole: formData.userRole,
-          organizationId: formData.organizationId,
+          role: formData.userRole,
+          orgId: parseInt(formData.organizationId),
         }
       });
     } else {
@@ -185,12 +185,12 @@ const UsersPage: React.FC = () => {
       }
       
       createUserMutation.mutate({
-        userName: formData.userName,
+        username: formData.userName,
         email: formData.email,
         firstName: formData.firstName,
         lastName: formData.lastName,
-        userRole: formData.userRole,
-        organizationId: formData.organizationId,
+        role: formData.userRole,
+        orgId: parseInt(formData.organizationId),
         password: formData.password
       });
     }
@@ -204,12 +204,12 @@ const UsersPage: React.FC = () => {
     if (user.firstName && user.lastName) {
       return `${user.firstName} ${user.lastName}`;
     }
-    return user.userName;
+    return user.userName || user.username || '';
   };
 
   // Find organization name by ID
-  const getOrgName = (orgId: string) => {
-    const org = organizations.find(org => org.id.toString() === orgId);
+  const getOrgName = (orgId: string | number) => {
+    const org = organizations.find(org => org.id.toString() === orgId.toString());
     return org ? org.orgname : 'Unknown';
   };
 
@@ -286,7 +286,7 @@ const UsersPage: React.FC = () => {
                     <TableCell className="font-medium">
                       <div className="flex items-center space-x-2">
                         <User className="h-4 w-4 text-muted-foreground" />
-                        <span>{user.userName}</span>
+                        <span>{user.userName || user.username}</span>
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
@@ -294,16 +294,16 @@ const UsersPage: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
-                        user.userRole === '2' 
+                        (user.userRole === '2' || user.role === '2') 
                           ? 'bg-primary/20 text-primary' 
                           : 'bg-muted text-muted-foreground'
                       }`}>
-                        {user.userRole === '2' ? 'Admin' : 'User'}
+                        {(user.userRole === '2' || user.role === '2') ? 'Admin' : 'User'}
                       </span>
                     </TableCell>
                     {isSuperAdmin && selectedOrgId === 'all' && (
                       <TableCell className="hidden md:table-cell">
-                        {getOrgName(user.organizationId)}
+                        {getOrgName(user.organizationId || user.orgId || '')}
                       </TableCell>
                     )}
                     <TableCell className="hidden md:table-cell">
