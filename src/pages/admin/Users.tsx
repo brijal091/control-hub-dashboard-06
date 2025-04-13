@@ -32,7 +32,7 @@ const UsersPage: React.FC = () => {
   const queryClient = useQueryClient();
   const isSuperAdmin = user?.userRole === '1';
   
-  const [selectedOrgId, setSelectedOrgId] = useState<string>(isSuperAdmin ? '' : (user?.organizationId || ''));
+  const [selectedOrgId, setSelectedOrgId] = useState<string>(isSuperAdmin ? 'all' : (user?.organizationId || ''));
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [formData, setFormData] = useState({
@@ -62,7 +62,7 @@ const UsersPage: React.FC = () => {
     refetch: refetchUsers
   } = useQuery({
     queryKey: ['users', selectedOrgId],
-    queryFn: () => usersApi.getAll(selectedOrgId),
+    queryFn: () => usersApi.getAll(selectedOrgId === 'all' ? '' : selectedOrgId),
     enabled: !!user
   });
 
@@ -126,7 +126,7 @@ const UsersPage: React.FC = () => {
         firstName: '',
         lastName: '',
         userRole: '3',
-        organizationId: selectedOrgId,
+        organizationId: selectedOrgId === 'all' ? '' : selectedOrgId,
         password: '',
       });
     }
@@ -218,7 +218,7 @@ const UsersPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold">Users</h1>
-          {isSuperAdmin && selectedOrgId && (
+          {isSuperAdmin && selectedOrgId && selectedOrgId !== 'all' && (
             <p className="text-sm text-muted-foreground">
               Showing users for {getOrgName(selectedOrgId)}
             </p>
@@ -235,7 +235,7 @@ const UsersPage: React.FC = () => {
                 <SelectValue placeholder="All Organizations" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Organizations</SelectItem>
+                <SelectItem value="all">All Organizations</SelectItem>
                 {organizations.map((org) => (
                   <SelectItem key={org.id.toString()} value={org.id.toString()}>
                     {org.orgname}
@@ -260,7 +260,7 @@ const UsersPage: React.FC = () => {
                 <TableHead>Username</TableHead>
                 <TableHead className="hidden md:table-cell">Name</TableHead>
                 <TableHead>Role</TableHead>
-                {isSuperAdmin && !selectedOrgId && (
+                {isSuperAdmin && selectedOrgId === 'all' && (
                   <TableHead className="hidden md:table-cell">Organization</TableHead>
                 )}
                 <TableHead className="hidden md:table-cell">Last Login</TableHead>
@@ -270,13 +270,13 @@ const UsersPage: React.FC = () => {
             <TableBody>
               {isLoadingUsers ? (
                 <TableRow>
-                  <TableCell colSpan={isSuperAdmin && !selectedOrgId ? 6 : 5} className="text-center py-8">
+                  <TableCell colSpan={isSuperAdmin && selectedOrgId === 'all' ? 6 : 5} className="text-center py-8">
                     Loading users...
                   </TableCell>
                 </TableRow>
               ) : users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isSuperAdmin && !selectedOrgId ? 6 : 5} className="text-center py-8">
+                  <TableCell colSpan={isSuperAdmin && selectedOrgId === 'all' ? 6 : 5} className="text-center py-8">
                     No users found.
                   </TableCell>
                 </TableRow>
@@ -301,7 +301,7 @@ const UsersPage: React.FC = () => {
                         {user.userRole === '2' ? 'Admin' : 'User'}
                       </span>
                     </TableCell>
-                    {isSuperAdmin && !selectedOrgId && (
+                    {isSuperAdmin && selectedOrgId === 'all' && (
                       <TableCell className="hidden md:table-cell">
                         {getOrgName(user.organizationId)}
                       </TableCell>
