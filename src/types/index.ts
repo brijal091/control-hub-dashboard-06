@@ -26,11 +26,11 @@ export interface AuthResponse {
 
 // Organization types
 export interface Organization {
-  id: string;
-  name: string;
-  description?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  id: number;
+  orgname: string;
+  rowstate: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // IoT Device types

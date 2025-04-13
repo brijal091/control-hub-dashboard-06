@@ -60,13 +60,13 @@ export async function apiRequest<T>(endpoint: string, options: ApiOptions = {}):
 
 // Organization API calls
 export const organizationsApi = {
-  getAll: () => apiRequest<{ organizations: any[] }>('/organizations'),
-  getById: (id: string) => apiRequest<{ organization: any }>(`/organizations/${id}`),
-  create: (data: any) => apiRequest<{ organization: any }>('/organizations', { 
+  getAll: () => apiRequest<any[]>('/orgs/getAllActiveOrgs'),
+  getById: (id: string) => apiRequest<any>(`/organizations/${id}`),
+  create: (data: any) => apiRequest<any>('/organizations', { 
     method: 'POST', 
     body: data 
   }),
-  update: (id: string, data: any) => apiRequest<{ organization: any }>(`/organizations/${id}`, { 
+  update: (id: string, data: any) => apiRequest<any>(`/organizations/${id}`, { 
     method: 'PUT', 
     body: data 
   }),

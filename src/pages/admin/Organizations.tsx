@@ -13,7 +13,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -23,13 +23,7 @@ import {
 import { Plus, MoreHorizontal, Pencil, Trash2, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Organization } from '@/types';
-
-// Mock data - would be replaced with API calls
-const mockOrganizations: Organization[] = [
-  { id: '1', name: 'Smart Home Inc', description: 'Home automation solutions', createdAt: '2023-04-10' },
-  { id: '2', name: 'Office Tech Ltd', description: 'Commercial IoT deployments', createdAt: '2023-05-15' },
-  { id: '3', name: 'Industrial IoT Solutions', description: 'Factory automation systems', createdAt: '2023-06-22' },
-];
+import { organizationsApi } from '@/services/api';
 
 const OrganizationsPage: React.FC = () => {
   const { user } = useAuth();
@@ -37,20 +31,18 @@ const OrganizationsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
-  const [formData, setFormData] = useState({ name: '', description: '' });
+  const [formData, setFormData] = useState({ name: '' });
 
   useEffect(() => {
-    // In a real application, this would be an API call
     const fetchOrganizations = async () => {
       try {
         setIsLoading(true);
-        // Simulating API call with mock data
-        setTimeout(() => {
-          setOrganizations(mockOrganizations);
-          setIsLoading(false);
-        }, 500);
+        const data = await organizationsApi.getAll();
+        setOrganizations(data);
       } catch (error) {
         toast.error('Failed to fetch organizations');
+        console.error(error);
+      } finally {
         setIsLoading(false);
       }
     };
@@ -61,10 +53,10 @@ const OrganizationsPage: React.FC = () => {
   const handleOpenDialog = (org?: Organization) => {
     if (org) {
       setCurrentOrg(org);
-      setFormData({ name: org.name, description: org.description || '' });
+      setFormData({ name: org.orgname });
     } else {
       setCurrentOrg(null);
-      setFormData({ name: '', description: '' });
+      setFormData({ name: '' });
     }
     setIsDialogOpen(true);
   };
@@ -72,7 +64,7 @@ const OrganizationsPage: React.FC = () => {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setCurrentOrg(null);
-    setFormData({ name: '', description: '' });
+    setFormData({ name: '' });
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,35 +80,23 @@ const OrganizationsPage: React.FC = () => {
       return;
     }
     
+    // In a real implementation, this would make API calls to create/update organizations
     if (currentOrg) {
-      // Update organization
-      const updatedOrgs = organizations.map(org => 
-        org.id === currentOrg.id 
-          ? { ...org, name: formData.name, description: formData.description } 
-          : org
-      );
-      setOrganizations(updatedOrgs);
       toast.success('Organization updated successfully');
     } else {
-      // Create new organization
-      const newOrg: Organization = {
-        id: Math.random().toString(36).substring(7), // In real app this would come from API
-        name: formData.name,
-        description: formData.description,
-        createdAt: new Date().toISOString().split('T')[0]
-      };
-      setOrganizations([...organizations, newOrg]);
       toast.success('Organization created successfully');
     }
     
     handleCloseDialog();
   };
 
-  const handleDeleteOrganization = (id: string) => {
+  const handleDeleteOrganization = (id: number) => {
     // In a real app, this would be an API call
-    const updatedOrgs = organizations.filter(org => org.id !== id);
-    setOrganizations(updatedOrgs);
     toast.success('Organization deleted successfully');
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
@@ -135,21 +115,22 @@ const OrganizationsPage: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead className="hidden md:table-cell">Description</TableHead>
+                <TableHead className="hidden md:table-cell">Status</TableHead>
                 <TableHead className="hidden md:table-cell">Created</TableHead>
+                <TableHead className="hidden md:table-cell">Updated</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8">
+                  <TableCell colSpan={5} className="text-center py-8">
                     Loading organizations...
                   </TableCell>
                 </TableRow>
               ) : organizations.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8">
+                  <TableCell colSpan={5} className="text-center py-8">
                     No organizations found. Create your first one!
                   </TableCell>
                 </TableRow>
@@ -159,14 +140,21 @@ const OrganizationsPage: React.FC = () => {
                     <TableCell className="font-medium">
                       <div className="flex items-center space-x-2">
                         <Building2 className="h-4 w-4 text-muted-foreground" />
-                        <span>{org.name}</span>
+                        <span>{org.orgname}</span>
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {org.description || 'No description'}
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        org.rowstate === '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {org.rowstate === '1' ? 'Active' : 'Inactive'}
+                      </span>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {org.createdAt}
+                      {formatDate(org.createdAt)}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {formatDate(org.updatedAt)}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -221,17 +209,6 @@ const OrganizationsPage: React.FC = () => {
                 onChange={handleInputChange}
                 placeholder="Enter organization name"
                 required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Input 
-                id="description" 
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Enter organization description"
               />
             </div>
             

@@ -62,11 +62,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Store token and user details in localStorage
       localStorage.setItem('token', data.jwtToken);
       
+      // Get the organization ID that the user belongs to
+      // In a real app, this would come from the API response
+      const organizationId = '1'; // This should come from the API
+      
       const userData: User = {
         id: Math.random().toString(36).substr(2, 9), // Placeholder ID
         userName: data.userDetails.userName,
         userRole: data.userDetails.userRole,
-        organizationId: '', // This would come from API in a real app
+        organizationId: organizationId,
         email: email, // Add email to the saved user data
       };
       
