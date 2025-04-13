@@ -20,13 +20,38 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { Plus, MoreHorizontal, Pencil, Trash2, Building2 } from 'lucide-react';
+import { Plus, MoreHorizontal, Pencil, Trash2, Building2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Organization } from '@/types';
 import { organizationsApi } from '@/services/api';
 
+// Mock data for fallback if API fails
+const mockOrganizations: Organization[] = [
+  { 
+    id: 1, 
+    orgname: 'Tech Solutions Inc', 
+    rowstate: '1',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  { 
+    id: 2, 
+    orgname: 'IoT Innovations', 
+    rowstate: '1',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  { 
+    id: 3, 
+    orgname: 'Smart Home Systems', 
+    rowstate: '0',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+];
+
 const OrganizationsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -37,18 +62,33 @@ const OrganizationsPage: React.FC = () => {
     const fetchOrganizations = async () => {
       try {
         setIsLoading(true);
-        const data = await organizationsApi.getAll();
-        setOrganizations(data);
+        console.log('Fetching organizations, token available:', !!token);
+        
+        // Delay the API call slightly to ensure token is available
+        setTimeout(async () => {
+          try {
+            const data = await organizationsApi.getAll();
+            console.log('Organizations fetched successfully:', data);
+            setOrganizations(data);
+          } catch (error) {
+            console.error('Error fetching organizations:', error);
+            toast.error('Failed to fetch organizations, using mock data');
+            // Fall back to mock data
+            setOrganizations(mockOrganizations);
+          } finally {
+            setIsLoading(false);
+          }
+        }, 500);
       } catch (error) {
+        console.error('Error in fetchOrganizations:', error);
         toast.error('Failed to fetch organizations');
-        console.error(error);
-      } finally {
+        setOrganizations(mockOrganizations);
         setIsLoading(false);
       }
     };
 
     fetchOrganizations();
-  }, []);
+  }, [token]);
 
   const handleOpenDialog = (org?: Organization) => {
     if (org) {
@@ -125,7 +165,10 @@ const OrganizationsPage: React.FC = () => {
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8">
-                    Loading organizations...
+                    <div className="flex justify-center items-center space-x-2">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                      <span>Loading organizations...</span>
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : organizations.length === 0 ? (

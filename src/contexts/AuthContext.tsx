@@ -31,8 +31,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const storedUser = localStorage.getItem('user');
       
       if (storedToken && storedUser) {
+        console.log('Token found in localStorage during initialization');
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
+      } else {
+        console.log('No token found in localStorage during initialization');
       }
       setIsLoading(false);
     };
@@ -45,6 +48,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       // Use environment variable for API URL
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/arduino';
+      console.log(`Making login request to ${apiBaseUrl}/auth/login`);
+      
       const response = await fetch(`${apiBaseUrl}/auth/login`, {
         method: 'POST',
         headers: {
@@ -54,13 +59,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!response.ok) {
-        throw new Error('Login failed');
+        const errorText = await response.text();
+        console.error(`Login failed with status ${response.status}:`, errorText);
+        throw new Error('Login failed: ' + (errorText || `Status code ${response.status}`));
       }
 
       const data: AuthResponse = await response.json();
+      console.log('Login successful, received token');
 
       // Store token and user details in localStorage
       localStorage.setItem('token', data.jwtToken);
+      console.log('Token saved to localStorage');
       
       // Get the organization ID that the user belongs to
       // In a real app, this would come from the API response
@@ -96,6 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    console.log('Logging out, clearing token and user data');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setToken(null);
