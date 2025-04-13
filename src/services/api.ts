@@ -1,7 +1,7 @@
 
 import { toast } from 'sonner';
 
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'http://localhost:3000';
 
 interface ApiOptions {
   method?: string;

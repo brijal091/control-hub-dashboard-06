@@ -14,7 +14,7 @@ const SettingsPage: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
-  const [apiUrl, setApiUrl] = useState('http://localhost:8000');
+  const [apiUrl, setApiUrl] = useState('http://localhost:3000');
   const [password, setPassword] = useState({
     current: '',
     new: '',
