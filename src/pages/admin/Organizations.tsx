@@ -58,35 +58,56 @@ const OrganizationsPage: React.FC = () => {
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
   const [formData, setFormData] = useState({ name: '' });
 
-  useEffect(() => {
-    const fetchOrganizations = async () => {
-      try {
-        setIsLoading(true);
-        console.log('Fetching organizations, token available:', !!token);
-        
-        // Delay the API call slightly to ensure token is available
-        setTimeout(async () => {
-          try {
-            const data = await organizationsApi.getAll();
-            console.log('Organizations fetched successfully:', data);
-            setOrganizations(data);
-          } catch (error) {
-            console.error('Error fetching organizations:', error);
-            toast.error('Failed to fetch organizations, using mock data');
-            // Fall back to mock data
-            setOrganizations(mockOrganizations);
-          } finally {
-            setIsLoading(false);
-          }
-        }, 500);
-      } catch (error) {
-        console.error('Error in fetchOrganizations:', error);
-        toast.error('Failed to fetch organizations');
-        setOrganizations(mockOrganizations);
-        setIsLoading(false);
-      }
-    };
+  const createOgranization = async () => {
+    try {
+      setIsLoading(true);
+      setTimeout(async () => {
+        try {
+          const res = await organizationsApi.create({orgname: formData.name});
+          if(res)
+          fetchOrganizations()
+        } catch (error) {
+          console.error('Error fetching organizations:', error);
+          toast.error('Failed to fetch organizations, using mock data');
+          // Fall back to mock data
+          setOrganizations(mockOrganizations);
+        } finally {
+          setIsLoading(false);
+        }
+      }, 500);
+    } catch (error) {
+      console.error('Error in fetchOrganizations:', error);
+      toast.error('Failed to fetch organizations');
+      setOrganizations(mockOrganizations);
+      setIsLoading(false);
+    }
+  };
 
+  const fetchOrganizations = async () => {
+    try {
+      setIsLoading(true);
+      // Delay the API call slightly to ensure token is available
+      setTimeout(async () => {
+        try {
+          const data = await organizationsApi.getAll();
+          setOrganizations(data);
+        } catch (error) {
+          console.error('Error fetching organizations:', error);
+          toast.error('Failed to fetch organizations, using mock data');
+          // Fall back to mock data
+          setOrganizations(mockOrganizations);
+        } finally {
+          setIsLoading(false);
+        }
+      }, 500);
+    } catch (error) {
+      console.error('Error in fetchOrganizations:', error);
+      toast.error('Failed to fetch organizations');
+      setOrganizations(mockOrganizations);
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
     fetchOrganizations();
   }, [token]);
 
@@ -120,10 +141,10 @@ const OrganizationsPage: React.FC = () => {
       return;
     }
     
-    // In a real implementation, this would make API calls to create/update organizations
     if (currentOrg) {
       toast.success('Organization updated successfully');
     } else {
+      createOgranization()
       toast.success('Organization created successfully');
     }
     
@@ -155,7 +176,7 @@ const OrganizationsPage: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead className="hidden md:table-cell">Status</TableHead>
+                {/* <TableHead className="hidden md:table-cell">Status</TableHead> */}
                 <TableHead className="hidden md:table-cell">Created</TableHead>
                 <TableHead className="hidden md:table-cell">Updated</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
@@ -186,13 +207,13 @@ const OrganizationsPage: React.FC = () => {
                         <span>{org.orgname}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">
+                    {/* <TableCell className="hidden md:table-cell">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                         org.rowstate === '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
                         {org.rowstate === '1' ? 'Active' : 'Inactive'}
                       </span>
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell className="hidden md:table-cell">
                       {formatDate(org.createdAt)}
                     </TableCell>

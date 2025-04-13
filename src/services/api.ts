@@ -73,15 +73,15 @@ export async function apiRequest<T>(endpoint: string, options: ApiOptions = {}):
 export const organizationsApi = {
   getAll: () => apiRequest<any[]>('/orgs/getAllActiveOrgs'),
   getById: (id: string) => apiRequest<any>(`/organizations/${id}`),
-  create: (data: any) => apiRequest<any>('/organizations', { 
+  create: (data: {orgname:string}) => apiRequest<any>('/orgs/create', { 
     method: 'POST', 
     body: data 
   }),
-  update: (id: string, data: any) => apiRequest<any>(`/organizations/${id}`, { 
+  update: (id: string, data: any) => apiRequest<any>(`/orgs/update/${id}`, { 
     method: 'PUT', 
     body: data 
   }),
-  delete: (id: string) => apiRequest<{ success: boolean }>(`/organizations/${id}`, { 
+  delete: (id: string) => apiRequest<{ success: boolean }>(`/orgs/delete/${id}`, { 
     method: 'DELETE' 
   }),
 };
