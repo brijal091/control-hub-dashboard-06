@@ -1,7 +1,8 @@
 
 import { toast } from 'sonner';
 
-const BASE_URL = 'http://localhost:3000';
+// Use environment variable for base URL
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/arduino';
 
 interface ApiOptions {
   method?: string;
