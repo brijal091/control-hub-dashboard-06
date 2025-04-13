@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 interface AuthContextType {
   token: string | null;
   user: User | null;
-  login: (username: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -40,15 +40,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth();
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:3000/login', {
+      const response = await fetch('http://localhost:8000/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (!response.ok) {
@@ -65,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userName: data.userDetails.userName,
         userRole: data.userDetails.userRole,
         organizationId: '', // This would come from API in a real app
+        email: email, // Add email to the saved user data
       };
       
       localStorage.setItem('user', JSON.stringify(userData));
