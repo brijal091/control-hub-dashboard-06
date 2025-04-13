@@ -24,28 +24,15 @@ import {
 import { Plus, MoreHorizontal, Pencil, Trash2, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { Organization, User as UserType, UserRole } from '@/types';
-
-// Mock data - would be replaced with API calls
-const mockUsers: UserType[] = [
-  { id: '1', userName: 'john.doe', userRole: '2', organizationId: '1', email: 'john@example.com', firstName: 'John', lastName: 'Doe', lastLogin: '2023-10-15' },
-  { id: '2', userName: 'jane.smith', userRole: '3', organizationId: '1', email: 'jane@example.com', firstName: 'Jane', lastName: 'Smith', lastLogin: '2023-10-20' },
-  { id: '3', userName: 'mike.wilson', userRole: '3', organizationId: '2', email: 'mike@example.com', firstName: 'Mike', lastName: 'Wilson', lastLogin: '2023-10-18' },
-];
-
-const mockOrganizations: Organization[] = [
-  { id: '1', name: 'Smart Home Inc', description: 'Home automation solutions' },
-  { id: '2', name: 'Office Tech Ltd', description: 'Commercial IoT deployments' },
-  { id: '3', name: 'Industrial IoT Solutions', description: 'Factory automation systems' },
-];
+import { usersApi, organizationsApi } from '@/services/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const UsersPage: React.FC = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const isSuperAdmin = user?.userRole === '1';
   
-  const [users, setUsers] = useState<UserType[]>([]);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState<string>(isSuperAdmin ? '' : (user?.organizationId || ''));
-  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [formData, setFormData] = useState({
@@ -58,45 +45,66 @@ const UsersPage: React.FC = () => {
     password: '',
   });
 
-  useEffect(() => {
-    // In a real application, these would be API calls
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        if (isSuperAdmin) {
-          setOrganizations(mockOrganizations);
-          
-          if (selectedOrgId) {
-            const filteredUsers = mockUsers.filter(u => u.organizationId === selectedOrgId);
-            setUsers(filteredUsers);
-          } else {
-            setUsers(mockUsers);
-          }
-        } else {
-          // For org admin, only show users in their organization
-          const orgId = user?.organizationId || '';
-          const filteredUsers = mockUsers.filter(u => u.organizationId === orgId);
-          setUsers(filteredUsers);
-          
-          // Set the current org for org admin (they can't change it)
-          const currentOrg = mockOrganizations.find(org => org.id === orgId);
-          setOrganizations(currentOrg ? [currentOrg] : []);
-          setSelectedOrgId(orgId);
-        }
-        
-        setIsLoading(false);
-      } catch (error) {
-        toast.error('Failed to fetch data');
-        setIsLoading(false);
-      }
-    };
+  // Fetch organizations
+  const { 
+    data: organizations = [], 
+    isLoading: isLoadingOrgs 
+  } = useQuery({
+    queryKey: ['organizations'],
+    queryFn: () => organizationsApi.getAll(),
+    enabled: !!user
+  });
 
-    fetchData();
-  }, [isSuperAdmin, selectedOrgId, user?.organizationId]);
+  // Fetch users based on selected organization
+  const {
+    data: usersData,
+    isLoading: isLoadingUsers,
+    refetch: refetchUsers
+  } = useQuery({
+    queryKey: ['users', selectedOrgId],
+    queryFn: () => usersApi.getAll(selectedOrgId),
+    enabled: !!user
+  });
+
+  const users = usersData?.users || [];
+
+  // Create user mutation
+  const createUserMutation = useMutation({
+    mutationFn: (userData: any) => usersApi.create(userData),
+    onSuccess: () => {
+      toast.success('User created successfully');
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      handleCloseDialog();
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to create user: ${error.message}`);
+    }
+  });
+
+  // Update user mutation
+  const updateUserMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string, data: any }) => usersApi.update(id, data),
+    onSuccess: () => {
+      toast.success('User updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      handleCloseDialog();
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update user: ${error.message}`);
+    }
+  });
+
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: (id: string) => usersApi.delete(id),
+    onSuccess: () => {
+      toast.success('User deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to delete user: ${error.message}`);
+    }
+  });
 
   const handleOpenDialog = (user?: UserType) => {
     if (user) {
@@ -158,51 +166,38 @@ const UsersPage: React.FC = () => {
     
     if (currentUser) {
       // Update user
-      const updatedUsers = users.map(u => 
-        u.id === currentUser.id 
-          ? { 
-              ...u, 
-              userName: formData.userName,
-              email: formData.email,
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              userRole: formData.userRole,
-              organizationId: formData.organizationId,
-            } 
-          : u
-      );
-      setUsers(updatedUsers);
-      toast.success('User updated successfully');
+      updateUserMutation.mutate({
+        id: currentUser.id,
+        data: {
+          userName: formData.userName,
+          email: formData.email,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          userRole: formData.userRole,
+          organizationId: formData.organizationId,
+        }
+      });
     } else {
       // Create new user
-      // In a real app, API would handle password hashing etc.
       if (!formData.password) {
         toast.error('Password is required for new users');
         return;
       }
       
-      const newUser: UserType = {
-        id: Math.random().toString(36).substring(7),
+      createUserMutation.mutate({
         userName: formData.userName,
         email: formData.email,
         firstName: formData.firstName,
         lastName: formData.lastName,
         userRole: formData.userRole,
         organizationId: formData.organizationId,
-        lastLogin: '-'
-      };
-      setUsers([...users, newUser]);
-      toast.success('User created successfully');
+        password: formData.password
+      });
     }
-    
-    handleCloseDialog();
   };
 
   const handleDeleteUser = (id: string) => {
-    // In a real app, this would be an API call
-    const updatedUsers = users.filter(user => user.id !== id);
-    setUsers(updatedUsers);
-    toast.success('User deleted successfully');
+    deleteUserMutation.mutate(id);
   };
 
   const getUserFullName = (user: UserType) => {
@@ -212,6 +207,12 @@ const UsersPage: React.FC = () => {
     return user.userName;
   };
 
+  // Find organization name by ID
+  const getOrgName = (orgId: string) => {
+    const org = organizations.find(org => org.id.toString() === orgId);
+    return org ? org.orgname : 'Unknown';
+  };
+
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
@@ -219,7 +220,7 @@ const UsersPage: React.FC = () => {
           <h1 className="text-2xl font-bold">Users</h1>
           {isSuperAdmin && selectedOrgId && (
             <p className="text-sm text-muted-foreground">
-              Showing users for {organizations.find(org => org.id === selectedOrgId)?.name}
+              Showing users for {getOrgName(selectedOrgId)}
             </p>
           )}
         </div>
@@ -236,7 +237,9 @@ const UsersPage: React.FC = () => {
               <SelectContent>
                 <SelectItem value="">All Organizations</SelectItem>
                 {organizations.map((org) => (
-                  <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
+                  <SelectItem key={org.id.toString()} value={org.id.toString()}>
+                    {org.orgname}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -265,7 +268,7 @@ const UsersPage: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
+              {isLoadingUsers ? (
                 <TableRow>
                   <TableCell colSpan={isSuperAdmin && !selectedOrgId ? 6 : 5} className="text-center py-8">
                     Loading users...
@@ -300,11 +303,11 @@ const UsersPage: React.FC = () => {
                     </TableCell>
                     {isSuperAdmin && !selectedOrgId && (
                       <TableCell className="hidden md:table-cell">
-                        {organizations.find(org => org.id === user.organizationId)?.name || 'Unknown'}
+                        {getOrgName(user.organizationId)}
                       </TableCell>
                     )}
                     <TableCell className="hidden md:table-cell">
-                      {user.lastLogin}
+                      {user.lastLogin || 'Never'}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -430,7 +433,7 @@ const UsersPage: React.FC = () => {
                     {user?.userRole === '1' && (
                       <SelectItem value="2">Organization Admin</SelectItem>
                     )}
-                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="3">User</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -447,7 +450,9 @@ const UsersPage: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {organizations.map((org) => (
-                      <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
+                      <SelectItem key={org.id.toString()} value={org.id.toString()}>
+                        {org.orgname}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
