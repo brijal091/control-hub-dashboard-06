@@ -226,6 +226,9 @@ const UsersPage: React.FC = () => {
     return org ? org.orgname : 'Unknown';
   };
 
+  // Filter out organizations that have valid IDs
+  const validOrganizations = organizations.filter(org => org.id);
+
   return (
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
@@ -249,7 +252,7 @@ const UsersPage: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Organizations</SelectItem>
-                {organizations.map((org) => (
+                {validOrganizations.map((org) => (
                   <SelectItem key={org.id.toString()} value={org.id.toString()}>
                     {org.orgname}
                   </SelectItem>
@@ -462,7 +465,7 @@ const UsersPage: React.FC = () => {
                     <SelectValue placeholder="Select organization" />
                   </SelectTrigger>
                   <SelectContent>
-                    {organizations.map((org) => (
+                    {validOrganizations.map((org) => (
                       <SelectItem key={org.id.toString()} value={org.id.toString()}>
                         {org.orgname}
                       </SelectItem>
