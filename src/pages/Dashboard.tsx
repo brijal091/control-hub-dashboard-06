@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,8 +11,7 @@ import {
   Power, 
   Plus
 } from 'lucide-react';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
 import { TouchBackend } from 'react-dnd-touch-backend';
 import { IoTDevice } from '@/types';
 import GridLayout from 'react-grid-layout';
@@ -133,11 +131,6 @@ const DeviceCard: React.FC<{
   );
 };
 
-// Utility function to detect touch devices
-const isTouchDevice = () => {
-  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-};
-
 // Main Dashboard Component
 const Dashboard: React.FC = () => {
   const [devices, setDevices] = useState<IoTDevice[]>(initialDevices);
@@ -203,7 +196,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-4">
-        <DndProvider backend={isTouchDevice() ? TouchBackend : HTML5Backend}>
+        <DndProvider backend={TouchBackend}>
           <div className="bg-muted/30 p-4 rounded-lg min-h-[500px]">
             {layouts.length > 0 && (
               <GridLayout
