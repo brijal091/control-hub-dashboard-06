@@ -110,12 +110,12 @@ const UsersPage: React.FC = () => {
     if (user) {
       setCurrentUser(user);
       setFormData({
-        userName: user.userName || user.username || '',
+        userName: user.userName || '',
         email: user.email || '',
         firstName: user.firstName || '',
         lastName: user.lastName || '',
-        userRole: user.userRole || user.role || '3',
-        organizationId: user.organizationId || user.orgId?.toString() || '',
+        userRole: user.userRole || '3',
+        organizationId: user.organizationId?.toString() || '',
         password: '', // We don't set the password for edits
       });
     } else {
@@ -204,7 +204,7 @@ const UsersPage: React.FC = () => {
     if (user.firstName && user.lastName) {
       return `${user.firstName} ${user.lastName}`;
     }
-    return user.userName || user.username || '';
+    return user.userName || '';
   };
 
   // Find organization name by ID
@@ -286,7 +286,7 @@ const UsersPage: React.FC = () => {
                     <TableCell className="font-medium">
                       <div className="flex items-center space-x-2">
                         <User className="h-4 w-4 text-muted-foreground" />
-                        <span>{user.userName || user.username}</span>
+                        <span>{user.userName || ''}</span>
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
@@ -294,16 +294,16 @@ const UsersPage: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
-                        (user.userRole === '2' || user.role === '2') 
+                        (user.userRole === '2') 
                           ? 'bg-primary/20 text-primary' 
                           : 'bg-muted text-muted-foreground'
                       }`}>
-                        {(user.userRole === '2' || user.role === '2') ? 'Admin' : 'User'}
+                        {(user.userRole === '2') ? 'Admin' : 'User'}
                       </span>
                     </TableCell>
                     {isSuperAdmin && selectedOrgId === 'all' && (
                       <TableCell className="hidden md:table-cell">
-                        {getOrgName(user.organizationId || user.orgId || '')}
+                        {getOrgName(user.organizationId || '')}
                       </TableCell>
                     )}
                     <TableCell className="hidden md:table-cell">
