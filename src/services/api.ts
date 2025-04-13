@@ -73,7 +73,7 @@ export async function apiRequest<T>(endpoint: string, options: ApiOptions = {}):
 export const organizationsApi = {
   getAll: () => apiRequest<any[]>('/orgs/getAllActiveOrgs'),
   getById: (id: string) => apiRequest<any>(`/organizations/${id}`),
-  create: (data: {orgname:string}) => apiRequest<any>('/orgs/create', { 
+  create: (data: {orgname: string}) => apiRequest<any>('/orgs/create', { 
     method: 'POST', 
     body: data 
   }),
@@ -92,11 +92,26 @@ export const usersApi = {
   getById: (id: string) => apiRequest<any>(`/users/${id}`),
   create: (data: any) => apiRequest<any>('/users/create', { 
     method: 'POST', 
-    body: data 
+    body: {
+      username: data.username || data.userName,
+      email: data.email,
+      firstName: data.firstName, 
+      lastName: data.lastName,
+      role: data.role || data.userRole,
+      orgId: parseInt(data.orgId || data.organizationId),
+      password: data.password
+    } 
   }),
   update: (id: string, data: any) => apiRequest<any>(`/users/${id}`, { 
     method: 'PUT', 
-    body: data 
+    body: {
+      username: data.username || data.userName,
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      role: data.role || data.userRole,
+      orgId: parseInt(data.orgId || data.organizationId)
+    } 
   }),
   delete: (id: string) => apiRequest<any>(`/users/${id}`, { 
     method: 'DELETE' 

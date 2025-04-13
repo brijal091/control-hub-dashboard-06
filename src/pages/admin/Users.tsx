@@ -68,6 +68,18 @@ const UsersPage: React.FC = () => {
 
   const users = usersData?.users || usersData || [];
 
+  // Map API response to consistent user objects
+  const normalizedUsers = users.map((user: any) => ({
+    id: user.id,
+    userName: user.userName || user.username,
+    userRole: user.userRole || user.role,
+    organizationId: user.organizationId || user.orgId,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    lastLogin: user.lastLogin
+  }));
+
   // Create user mutation
   const createUserMutation = useMutation({
     mutationFn: (userData: any) => usersApi.create(userData),
@@ -209,6 +221,7 @@ const UsersPage: React.FC = () => {
 
   // Find organization name by ID
   const getOrgName = (orgId: string | number) => {
+    if (!orgId) return 'Unknown';
     const org = organizations.find(org => org.id.toString() === orgId.toString());
     return org ? org.orgname : 'Unknown';
   };
@@ -274,14 +287,14 @@ const UsersPage: React.FC = () => {
                     Loading users...
                   </TableCell>
                 </TableRow>
-              ) : users.length === 0 ? (
+              ) : normalizedUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={isSuperAdmin && selectedOrgId === 'all' ? 6 : 5} className="text-center py-8">
                     No users found.
                   </TableCell>
                 </TableRow>
               ) : (
-                users.map((user) => (
+                normalizedUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">
                       <div className="flex items-center space-x-2">
