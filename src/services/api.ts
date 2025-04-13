@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 
 // Use environment variable for base URL
@@ -93,24 +92,20 @@ export const usersApi = {
   create: (data: any) => apiRequest<any>('/users/create', { 
     method: 'POST', 
     body: {
-      username: data.username || data.userName,
+      username: data.username,
       email: data.email,
-      firstName: data.firstName, 
-      lastName: data.lastName,
-      role: data.role || data.userRole,
-      orgId: parseInt(data.orgId || data.organizationId),
-      password: data.password
+      password: data.password,
+      role: data.role,
+      orgId: data.orgId
     } 
   }),
   update: (id: string, data: any) => apiRequest<any>(`/users/${id}`, { 
     method: 'PUT', 
     body: {
-      username: data.username || data.userName,
+      username: data.username,
       email: data.email,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      role: data.role || data.userRole,
-      orgId: parseInt(data.orgId || data.organizationId)
+      role: data.role,
+      orgId: data.orgId
     } 
   }),
   delete: (id: string) => apiRequest<any>(`/users/${id}`, { 
