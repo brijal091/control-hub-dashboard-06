@@ -31,7 +31,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             {/* Public routes */}
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login" element={<Dashboard />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
             
             {/* User routes */}

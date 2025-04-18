@@ -1,4 +1,3 @@
-
 // User types
 export type UserRole = '1' | '2' | '3';
 
@@ -34,17 +33,26 @@ export interface Organization {
 }
 
 // IoT Device types
-export interface IoTDevice {
-  id: string;
+export type DeviceType = 'switch' | 'slider' | 'button' | 'input' | 'stepH' | 'stepV' | 'joystick' | 'timer';
+
+export interface DeviceFormData {
   name: string;
-  type: 'switch' | 'toggle' | 'button' | 'slider' | 'thermostat';
-  status: boolean;
-  value?: number;
+  type: DeviceType;
+  icon?: string;
   min?: number;
   max?: number;
+  value?: number;
+  color?: string;
+}
+
+export interface IoTDevice extends DeviceFormData {
+  id: string;
+  status?: boolean;
   x: number;
   y: number;
-  icon?: string;
-  color?: string;
+  w: number;
+  h: number;
   organizationId: string;
+  timerValue?: number;
+  joystickPosition?: { x: number; y: number };
 }
