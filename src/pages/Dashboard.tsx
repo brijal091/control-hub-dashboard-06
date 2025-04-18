@@ -1,29 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import { 
-  LightbulbIcon, 
-  Fan, 
-  Thermometer, 
-  Plug, 
-  Power, 
-  Plus,
   X,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
   ArrowDown,
-  Timer,
-  Settings,
-  Gauge
+  Plus,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GridLayout from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -156,28 +145,6 @@ const initialDevices: IoTDevice[] = [
     color: 'hsl(var(--primary))'
   },
 ];
-
-// Helper function to get the appropriate icon component
-const getIconComponent = (iconName: string) => {
-  switch (iconName) {
-    case 'LightbulbIcon':
-      return <LightbulbIcon className="h-5 w-5" />;
-    case 'Fan':
-      return <Fan className="h-5 w-5" />;
-    case 'Thermometer':
-      return <Thermometer className="h-5 w-5" />;
-    case 'Plug':
-      return <Plug className="h-5 w-5" />;
-    case 'Gauge':
-      return <Gauge className="h-5 w-5" />;
-    case 'Timer':
-      return <Timer className="h-5 w-5" />;
-    case 'Settings':
-      return <Settings className="h-5 w-5" />;
-    default:
-      return <Power className="h-5 w-5" />;
-  }
-};
 
 // Switch Component
 const SwitchControl: React.FC<{
@@ -965,53 +932,6 @@ const MachineryDashboard: React.FC = () => {
                   <SelectItem value="timer">Timer</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            
-            {(newDevice.type === 'switch' || newDevice.type === 'slider' || newDevice.type === 'button') && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="icon" className="text-right">
-                  Icon
-                </Label>
-                <Select 
-                  value={newDevice.icon} 
-                  onValueChange={(value) => handleSelectChange('icon', value)}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select icon" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Power">Power</SelectItem>
-                    <SelectItem value="Gauge">Gauge</SelectItem>
-                    <SelectItem value="Settings">Settings</SelectItem>
-                    <SelectItem value="Fan">Fan</SelectItem>
-                    <SelectItem value="Thermometer">Thermometer</SelectItem>
-                    <SelectItem value="Timer">Timer</SelectItem>
-                    <SelectItem value="Plug">Socket</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="color" className="text-right">
-                Color
-              </Label>
-              <div className="col-span-3 flex gap-2">
-                <Input
-                  id="color"
-                  name="color"
-                  type="color"
-                  className="w-12 h-10 p-1"
-                  value={newDevice.color}
-                  onChange={handleInputChange}
-                />
-                <Input
-                  name="color"
-                  className="flex-1"
-                  value={newDevice.color}
-                  onChange={handleInputChange}
-                />
-              </div>
             </div>
             
             {newDevice.type === 'slider' && (
