@@ -1,25 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState, useCallback } from 'react';
-import { useDrop } from 'react-dnd';
 import { v4 as uuidv4 } from 'uuid';
-import BoardItem from './BoardItem';
-import { ItemTypes, ComponentTypes } from './ItemTypes';
+import { ComponentTypes } from './ItemTypes';
 import { ComponentToolbar } from './ComponentToolbar';
 import { useToast } from '@/components/ui/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu } from 'lucide-react';
-
-export interface BoardComponent {
-  id: string;
-  type: string;
-  left: number;
-  top: number;
-  width?: number;
-  height?: number;
-  zIndex?: number;
-  value?: boolean | number;
-}
+import BoardHeader from './components/BoardHeader';
+import BoardArea from './components/BoardArea';
+import { BoardComponent } from './types';
 
 const Board: React.FC = () => {
   const [components, setComponents] = useState<BoardComponent[]>([]);
@@ -28,115 +17,112 @@ const Board: React.FC = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  const [, drop] = useDrop(() => ({
-    accept: [ItemTypes.TOOLBAR_ITEM, ItemTypes.BOARD_ITEM],
-    drop: (item: any, monitor) => {
-      const delta = monitor.getDifferenceFromInitialOffset();
+  const handleDrop = useCallback((item: any, monitor: any) => {
+    const delta = monitor.getDifferenceFromInitialOffset();
+    
+    if (item.fromToolbar) {
+      const left = monitor.getClientOffset()?.x ?? 0;
+      const top = monitor.getClientOffset()?.y ?? 0;
       
-      if (item.fromToolbar) {
-        const left = monitor.getClientOffset()?.x ?? 0;
-        const top = monitor.getClientOffset()?.y ?? 0;
+      const boardElement = document.getElementById('board');
+      const boardRect = boardElement?.getBoundingClientRect();
+      
+      if (boardRect) {
+        let newComponentProps: Partial<BoardComponent> = {
+          id: uuidv4(),
+          type: item.type,
+          left: Math.round(left - boardRect.left),
+          top: Math.round(top - boardRect.top),
+          zIndex: nextZIndex,
+        };
         
-        const boardElement = document.getElementById('board');
-        const boardRect = boardElement?.getBoundingClientRect();
+        switch (item.type) {
+          case ComponentTypes.SWITCH:
+            newComponentProps = {
+              ...newComponentProps,
+              width: isMobile ? 150 : 180,
+              height: 100,
+              value: false,
+            };
+            break;
+          case ComponentTypes.SLIDER:
+            newComponentProps = {
+              ...newComponentProps,
+              width: isMobile ? 160 : 200,
+              height: 120,
+              value: 50,
+            };
+            break;
+          case ComponentTypes.BUTTON:
+            newComponentProps = {
+              ...newComponentProps,
+              width: isMobile ? 100 : 120,
+              height: isMobile ? 100 : 120,
+              value: false,
+            };
+            break;
+          case ComponentTypes.RECTANGLE_BUTTON:
+            newComponentProps = {
+              ...newComponentProps,
+              width: isMobile ? 150 : 180,
+              height: 100,
+              value: false,
+            };
+            break;
+          case ComponentTypes.STEPPER_H:
+            newComponentProps = {
+              ...newComponentProps,
+              width: isMobile ? 160 : 200,
+              height: 100,
+              value: 0,
+            };
+            break;
+          case ComponentTypes.STEPPER_V:
+            newComponentProps = {
+              ...newComponentProps,
+              width: isMobile ? 100 : 120,
+              height: isMobile ? 150 : 180,
+              value: 0,
+            };
+            break;
+          default:
+            break;
+        }
         
-        if (boardRect) {
-          let newComponentProps: Partial<BoardComponent> = {
-            id: uuidv4(),
-            type: item.type,
-            left: Math.round(left - boardRect.left),
-            top: Math.round(top - boardRect.top),
+        setNextZIndex(prev => prev + 1);
+        setComponents((prev) => [...prev, newComponentProps as BoardComponent]);
+        
+        if (isMobile) {
+          setShowToolbar(false);
+        }
+        
+        toast({
+          title: "Component Added",
+          description: `Added new ${item.type} to the board`,
+        });
+      }
+      return;
+    }
+    
+    if (!delta || !item.id) {
+      return;
+    }
+    
+    setComponents((prevComponents) =>
+      prevComponents.map((comp) => {
+        if (comp.id === item.id) {
+          return {
+            ...comp,
+            left: Math.round(comp.left + delta.x),
+            top: Math.round(comp.top + delta.y),
             zIndex: nextZIndex,
           };
-          
-          switch (item.type) {
-            case ComponentTypes.SWITCH:
-              newComponentProps = {
-                ...newComponentProps,
-                width: isMobile ? 150 : 180,
-                height: 100,
-                value: false,
-              };
-              break;
-            case ComponentTypes.SLIDER:
-              newComponentProps = {
-                ...newComponentProps,
-                width: isMobile ? 160 : 200,
-                height: 120,
-                value: 50,
-              };
-              break;
-            case ComponentTypes.BUTTON:
-              newComponentProps = {
-                ...newComponentProps,
-                width: isMobile ? 100 : 120,
-                height: isMobile ? 100 : 120,
-                value: false,
-              };
-              break;
-            case ComponentTypes.RECTANGLE_BUTTON:
-              newComponentProps = {
-                ...newComponentProps,
-                width: isMobile ? 150 : 180,
-                height: 100,
-                value: false,
-              };
-              break;
-            case ComponentTypes.STEPPER_H:
-              newComponentProps = {
-                ...newComponentProps,
-                width: isMobile ? 160 : 200,
-                height: 100,
-                value: 0,
-              };
-              break;
-            case ComponentTypes.STEPPER_V:
-              newComponentProps = {
-                ...newComponentProps,
-                width: isMobile ? 100 : 120,
-                height: isMobile ? 150 : 180,
-                value: 0,
-              };
-              break;
-            default:
-              break;
-          }
-          
-          setNextZIndex(prev => prev + 1);
-          setComponents((prev) => [...prev, newComponentProps as BoardComponent]);
-          
-          if (isMobile) {
-            setShowToolbar(false);
-          }
-          
-          toast({
-            title: "Component Added",
-            description: `Added new ${item.type} to the board`,
-          });
         }
-        return;
-      }
-      
-      if (!delta || !item.id) {
-        return;
-      }
-      
-      setComponents((prevComponents) =>
-        prevComponents.map((comp) => {
-          if (comp.id === item.id) {
-            return {
-              ...comp,
-              left: Math.round(comp.left + delta.x),
-              top: Math.round(comp.top + delta.y),
-              zIndex: nextZIndex,
-            };
-          }
-          return comp;
-        })
-      );
-      setNextZIndex(prev => prev + 1);
-    },
-  }));
+        return comp;
+      })
+    );
+    setNextZIndex(prev => prev + 1);
+  }, [nextZIndex, isMobile, toast]);
 
   const handleComponentChange = useCallback((id: string, value: boolean | number) => {
     setComponents((prevComponents) =>
@@ -222,47 +208,12 @@ const Board: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex justify-between items-center p-3 
-        bg-gradient-to-r from-gray-900/95 to-gray-800/95 
-        border-b border-gray-700/30 backdrop-blur-md">
-        <div className="flex items-center gap-2">
-          {isMobile && (
-            <button
-              onClick={toggleToolbar}
-              className="p-2 text-primary/90 hover:text-primary 
-                hover:bg-white/5 rounded-lg transition-all duration-300"
-              aria-label="Toggle toolbar"
-            >
-              <Menu size={18} />
-            </button>
-          )}
-          <h1 className="text-lg md:text-xl font-bold 
-            bg-gradient-to-r from-primary via-primary/80 to-primary/60 
-            bg-clip-text text-transparent">
-            IoT Control Board
-          </h1>
-        </div>
-        <div className="flex space-x-2">
-          <button 
-            onClick={saveLayout}
-            className="px-3 py-1.5 text-sm rounded-lg transition-all duration-300
-              bg-green-600/20 hover:bg-green-600/30 text-green-400
-              border border-green-500/20 hover:border-green-500/30
-              shadow-lg shadow-green-500/5 hover:shadow-green-500/10"
-          >
-            Save
-          </button>
-          <button 
-            onClick={loadLayout}
-            className="px-3 py-1.5 text-sm rounded-lg transition-all duration-300
-              bg-gray-600/20 hover:bg-gray-600/30 text-gray-300
-              border border-gray-500/20 hover:border-gray-500/30
-              shadow-lg shadow-gray-500/5 hover:shadow-gray-500/10"
-          >
-            Load
-          </button>
-        </div>
-      </div>
+      <BoardHeader 
+        onSave={saveLayout}
+        onLoad={loadLayout}
+        toggleToolbar={toggleToolbar}
+        showToolbar={showToolbar}
+      />
       
       <div className="flex flex-1 overflow-hidden relative">
         {isMobile && (
@@ -277,40 +228,14 @@ const Board: React.FC = () => {
         
         {!isMobile && <ComponentToolbar />}
         
-        <div 
-          id="board"
-          ref={drop} 
-          className="flex-1 relative overflow-auto border-l border-gray-700/30
-            bg-gradient-to-br from-gray-900 via-gray-900/95 to-gray-800/90"
-          style={{ minHeight: '500px' }}
-        >
-          {components.map((comp) => (
-            <div key={comp.id} onClick={() => handleComponentClick(comp.id)}>
-              <BoardItem
-                id={comp.id}
-                type={comp.type}
-                left={comp.left}
-                top={comp.top}
-                width={comp.width}
-                height={comp.height}
-                zIndex={comp.zIndex}
-                value={comp.value}
-                onChange={handleComponentChange}
-                onDelete={handleDeleteComponent}
-                onResize={handleResizeComponent}
-                isMobile={isMobile}
-              />
-            </div>
-          ))}
-          {components.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center 
-              text-gray-400 text-center p-4 animate-pulse">
-              {isMobile 
-                ? "Tap the menu icon and drag components to the board" 
-                : "Drag components from the toolbar to the board"}
-            </div>
-          )}
-        </div>
+        <BoardArea
+          components={components}
+          onDrop={handleDrop}
+          onComponentChange={handleComponentChange}
+          onDeleteComponent={handleDeleteComponent}
+          onResizeComponent={handleResizeComponent}
+          onComponentClick={handleComponentClick}
+        />
       </div>
     </div>
   );
