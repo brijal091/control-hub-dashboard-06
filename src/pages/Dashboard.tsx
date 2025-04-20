@@ -9,7 +9,7 @@ const Dashboard = () => {
   const isMobile = useIsMobile();
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900">
+    <div className="flex flex-col bg-gray-900 rounded-[12px] h-full">
       <DndProvider>
         {isMobile ? (
           // Simple layout for mobile - no resizable panels
@@ -18,7 +18,7 @@ const Dashboard = () => {
           </div>
         ) : (
           // Resizable panels for desktop
-          <ResizablePanelGroup direction="horizontal" className="min-h-screen">
+          <ResizablePanelGroup direction="horizontal" className="h-full w-full">
             <ResizablePanel defaultSize={100} minSize={15}>
               <Board />
             </ResizablePanel>
