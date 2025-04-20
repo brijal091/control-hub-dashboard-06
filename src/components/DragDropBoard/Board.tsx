@@ -168,6 +168,97 @@ const Board: React.FC = () => {
     setNextZIndex(prev => prev + 1);
   }, [nextZIndex]);
 
+  const handleMobileAdd = useCallback((type: string) => {
+    if (!isMobile) return;
+
+    const boardElement = document.getElementById('board');
+    const boardRect = boardElement?.getBoundingClientRect();
+
+    if (boardRect) {
+      const existingComponents = components.length;
+      const columnsPerRow = 2;
+      const componentWidth = isMobile ? 150 : 180;
+      const componentHeight = 100;
+      const gap = 20;
+
+      const row = Math.floor(existingComponents / columnsPerRow);
+      const col = existingComponents % columnsPerRow;
+
+      let newComponentProps: Partial<BoardComponent> = {
+        id: uuidv4(),
+        type,
+        left: col * (componentWidth + gap) + gap,
+        top: row * (componentHeight + gap) + gap,
+        zIndex: nextZIndex,
+      };
+
+      switch (type) {
+        case ComponentTypes.SWITCH:
+          newComponentProps = {
+            ...newComponentProps,
+            width: isMobile ? 150 : 180,
+            height: 100,
+            value: false,
+          };
+          break;
+        case ComponentTypes.SLIDER:
+          newComponentProps = {
+            ...newComponentProps,
+            width: isMobile ? 160 : 200,
+            height: 120,
+            value: 50,
+          };
+          break;
+        case ComponentTypes.BUTTON:
+          newComponentProps = {
+            ...newComponentProps,
+            width: isMobile ? 100 : 120,
+            height: isMobile ? 100 : 120,
+            value: false,
+          };
+          break;
+        case ComponentTypes.RECTANGLE_BUTTON:
+          newComponentProps = {
+            ...newComponentProps,
+            width: isMobile ? 150 : 180,
+            height: 100,
+            value: false,
+          };
+          break;
+        case ComponentTypes.STEPPER_H:
+          newComponentProps = {
+            ...newComponentProps,
+            width: isMobile ? 160 : 200,
+            height: 100,
+            value: 0,
+          };
+          break;
+        case ComponentTypes.STEPPER_V:
+          newComponentProps = {
+            ...newComponentProps,
+            width: isMobile ? 100 : 120,
+            height: isMobile ? 150 : 180,
+            value: 0,
+          };
+          break;
+        default:
+          break;
+      }
+      
+      setNextZIndex(prev => prev + 1);
+      setComponents((prev) => [...prev, newComponentProps as BoardComponent]);
+      
+      if (isMobile) {
+        setShowToolbar(false);
+      }
+      
+      toast({
+        title: "Component Added",
+        description: `Added new ${type} to the board`,
+      });
+    }
+  }, [components, isMobile, nextZIndex, toast]);
+
   const saveLayout = () => {
     const layout = JSON.stringify(components);
     localStorage.setItem('boardLayout', layout);
@@ -216,17 +307,20 @@ const Board: React.FC = () => {
       />
       
       <div className="flex flex-1 overflow-hidden relative">
-        {isMobile && (
+        {isMobile ? (
           <div 
             className={`absolute top-0 left-0 z-50 h-full transition-transform duration-300 ${
               showToolbar ? 'translate-x-0' : '-translate-x-full'
             }`}
           >
-            <ComponentToolbar onComponentAdded={() => setShowToolbar(false)} />
+            <ComponentToolbar 
+              onComponentAdded={() => setShowToolbar(false)}
+              onMobileAdd={handleMobileAdd}
+            />
           </div>
+        ) : (
+          <ComponentToolbar />
         )}
-        
-        {!isMobile && <ComponentToolbar />}
         
         <BoardArea
           components={components}
