@@ -34,11 +34,9 @@ const Board: React.FC = () => {
       const delta = monitor.getDifferenceFromInitialOffset();
       
       if (item.fromToolbar) {
-        // Add new component from toolbar
         const left = monitor.getClientOffset()?.x ?? 0;
         const top = monitor.getClientOffset()?.y ?? 0;
         
-        // Get board element position to calculate relative position
         const boardElement = document.getElementById('board');
         const boardRect = boardElement?.getBoundingClientRect();
         
@@ -51,7 +49,6 @@ const Board: React.FC = () => {
             zIndex: nextZIndex,
           };
           
-          // Set default properties based on component type
           switch (item.type) {
             case ComponentTypes.SWITCH:
               newComponentProps = {
@@ -108,7 +105,6 @@ const Board: React.FC = () => {
           setNextZIndex(prev => prev + 1);
           setComponents((prev) => [...prev, newComponentProps as BoardComponent]);
           
-          // Auto-hide toolbar on mobile after component is added
           if (isMobile) {
             setShowToolbar(false);
           }
@@ -125,7 +121,6 @@ const Board: React.FC = () => {
         return;
       }
       
-      // Bring the component to the front when dragging
       setComponents((prevComponents) =>
         prevComponents.map((comp) => {
           if (comp.id === item.id) {
@@ -176,7 +171,6 @@ const Board: React.FC = () => {
   }, []);
 
   const handleComponentClick = useCallback((id: string) => {
-    // Bring the clicked component to the front
     setComponents((prevComponents) =>
       prevComponents.map((comp) => {
         if (comp.id === id) {
@@ -203,7 +197,6 @@ const Board: React.FC = () => {
       const loadedComponents = JSON.parse(savedLayout);
       setComponents(loadedComponents);
       
-      // Find the highest zIndex and update nextZIndex
       const highestZIndex = loadedComponents.reduce(
         (max: number, comp: BoardComponent) => Math.max(max, comp.zIndex || 0), 
         0
@@ -229,29 +222,31 @@ const Board: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex justify-between items-center p-3 bg-gray-800 text-white">
+      <div className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg">
         <div className="flex items-center gap-2">
           {isMobile && (
             <button
               onClick={toggleToolbar}
-              className="p-2 text-white hover:bg-gray-700 rounded transition-colors"
+              className="p-2 text-white hover:bg-white/10 rounded-lg transition-all duration-300"
               aria-label="Toggle toolbar"
             >
               <Menu size={18} />
             </button>
           )}
-          <h1 className="text-lg md:text-xl font-bold">IoT Control Board</h1>
+          <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+            IoT Control Board
+          </h1>
         </div>
-        <div className="flex space-x-1 md:space-x-2">
+        <div className="flex space-x-2">
           <button 
             onClick={saveLayout}
-            className="px-2 py-1 md:px-3 md:py-1 text-xs md:text-sm bg-green-600 rounded hover:bg-green-700 transition-colors"
+            className="px-3 py-1.5 text-sm bg-green-600/80 rounded-lg hover:bg-green-600 transition-colors duration-300 backdrop-blur-sm"
           >
             Save
           </button>
           <button 
             onClick={loadLayout}
-            className="px-2 py-1 md:px-3 md:py-1 text-xs md:text-sm bg-gray-600 rounded hover:bg-gray-700 transition-colors"
+            className="px-3 py-1.5 text-sm bg-gray-600/80 rounded-lg hover:bg-gray-600 transition-colors duration-300 backdrop-blur-sm"
           >
             Load
           </button>
@@ -259,7 +254,6 @@ const Board: React.FC = () => {
       </div>
       
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Mobile toolbar (hidden by default) */}
         {isMobile && (
           <div 
             className={`absolute top-0 left-0 z-50 h-full transition-transform duration-300 ${
@@ -270,13 +264,12 @@ const Board: React.FC = () => {
           </div>
         )}
         
-        {/* Desktop toolbar (always visible) */}
         {!isMobile && <ComponentToolbar />}
         
         <div 
           id="board"
           ref={drop} 
-          className="flex-1 relative bg-gray-900 overflow-auto border-l border-gray-700"
+          className="flex-1 relative bg-gradient-to-br from-gray-900 to-gray-800 overflow-auto border-l border-gray-700/50"
           style={{ minHeight: '500px' }}
         >
           {components.map((comp) => (
@@ -298,7 +291,7 @@ const Board: React.FC = () => {
             </div>
           ))}
           {components.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center text-gray-500 text-center p-4">
+            <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-center p-4 animate-pulse">
               {isMobile 
                 ? "Tap the menu icon and drag components to the board" 
                 : "Drag components from the toolbar to the board"}

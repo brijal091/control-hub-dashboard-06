@@ -179,9 +179,9 @@ const BoardItem: React.FC<BoardItemProps> = ({
   return (
     <div
       ref={drag}
-      className={`absolute border-2 rounded-lg overflow-hidden ${
-        isDragging ? 'opacity-50' : 'opacity-100'
-      } ${showControls ? 'border-blue-500' : 'border-transparent'}`}
+      className={`absolute border-2 rounded-lg overflow-hidden transition-all duration-300 ${
+        isDragging ? 'opacity-50 scale-105' : 'opacity-100'
+      } ${showControls ? 'border-primary shadow-lg shadow-primary/20' : 'border-transparent'}`}
       style={{
         left,
         top,
@@ -189,7 +189,8 @@ const BoardItem: React.FC<BoardItemProps> = ({
         height: `${height}px`,
         cursor: isDragging ? 'grabbing' : 'grab',
         padding: isMobile ? '6px' : '10px',
-        background: 'rgba(30, 30, 30, 0.8)',
+        background: 'rgba(17, 17, 17, 0.8)',
+        backdropFilter: 'blur(8px)',
         touchAction: 'none',
         zIndex,
       }}
@@ -202,9 +203,9 @@ const BoardItem: React.FC<BoardItemProps> = ({
               e.stopPropagation();
               onDelete(id);
             }}
-            className="p-1 bg-red-600 rounded-full hover:bg-red-700 transition-colors"
+            className="p-1.5 bg-red-500/80 hover:bg-red-600 rounded-full transition-colors duration-300"
           >
-            <Trash2 size={isMobile ? 12 : 14} />
+            <Trash2 size={isMobile ? 12 : 14} className="text-white" />
           </button>
         </div>
       )}
@@ -212,14 +213,13 @@ const BoardItem: React.FC<BoardItemProps> = ({
         {renderComponent()}
       </div>
       
-      {/* Resize handle */}
       {showControls && (
         <div
-          className="absolute bottom-0 right-0 w-4 h-4 bg-blue-500 cursor-se-resize"
+          className="absolute bottom-0 right-0 bg-primary hover:bg-primary/80 cursor-se-resize transition-colors duration-300"
           onMouseDown={handleResizeStart}
           onTouchStart={handleTouchResizeStart}
           style={{
-            borderTopLeftRadius: '4px',
+            borderTopLeftRadius: '6px',
             width: isMobile ? '16px' : '16px',
             height: isMobile ? '16px' : '16px',
           }}

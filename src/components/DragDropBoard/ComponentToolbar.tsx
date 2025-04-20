@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useDrag } from 'react-dnd';
 import { ItemTypes, ComponentTypes } from './ItemTypes';
@@ -25,16 +24,16 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({ type, icon, label }) => {
   return (
     <div
       ref={drag}
-      className={`p-3 m-1 md:p-4 md:m-2 rounded-lg bg-gray-800 flex flex-col items-center justify-center cursor-grab ${
-        isDragging ? 'opacity-50' : 'opacity-100'
-      } hover:bg-gray-700 transition-colors`}
+      className={`p-3 m-1 md:p-4 md:m-2 rounded-lg bg-gray-800/80 backdrop-blur-sm flex flex-col items-center justify-center cursor-grab border border-gray-700/50 hover:border-primary/50 hover:bg-gray-700/80 transition-all duration-300 ${
+        isDragging ? 'opacity-50 scale-105' : 'opacity-100'
+      }`}
       style={{ 
         width: isMobile ? '70px' : '100px', 
         height: isMobile ? '70px' : '100px' 
       }}
     >
-      <div className="text-green-400 mb-1 md:mb-2">{icon}</div>
-      <span className="text-xs md:text-sm text-center text-white">{label}</span>
+      <div className="text-primary mb-1 md:mb-2">{icon}</div>
+      <span className="text-xs md:text-sm text-center text-gray-300">{label}</span>
     </div>
   );
 };
@@ -47,8 +46,8 @@ export const ComponentToolbar: React.FC<ComponentToolbarProps> = ({ onComponentA
   const isMobile = useIsMobile();
   
   return (
-    <div className={`${isMobile ? 'w-32 h-full' : 'w-36'} bg-gray-800 p-2 flex flex-col items-center overflow-y-auto`}>
-      <h2 className="text-white text-xs md:text-sm font-medium mb-1 md:mb-2">Components</h2>
+    <div className={`${isMobile ? 'w-32 h-full' : 'w-36'} bg-gradient-to-b from-gray-800 to-gray-900 p-2 flex flex-col items-center overflow-y-auto shadow-xl`}>
+      <h2 className="text-white text-xs md:text-sm font-medium mb-1 md:mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Components</h2>
       <ToolbarItem 
         type={ComponentTypes.SWITCH} 
         icon={<ToggleRight size={isMobile ? 24 : 32} />} 
