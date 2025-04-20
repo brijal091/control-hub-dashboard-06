@@ -179,9 +179,10 @@ const BoardItem: React.FC<BoardItemProps> = ({
   return (
     <div
       ref={drag}
-      className={`absolute border-2 rounded-lg overflow-hidden transition-all duration-300 ${
-        isDragging ? 'opacity-50 scale-105' : 'opacity-100'
-      } ${showControls ? 'border-primary shadow-lg shadow-primary/20' : 'border-transparent'}`}
+      className={`absolute rounded-xl overflow-hidden transition-all duration-300 
+        ${isDragging ? 'opacity-50 scale-105 rotate-3' : 'opacity-100'}
+        ${showControls ? 'ring-2 ring-primary/30 shadow-lg shadow-primary/20' : 'ring-0 shadow-md shadow-black/10'}
+        backdrop-blur-md bg-gradient-to-br from-gray-900/90 to-gray-800/90`}
       style={{
         left,
         top,
@@ -189,8 +190,6 @@ const BoardItem: React.FC<BoardItemProps> = ({
         height: `${height}px`,
         cursor: isDragging ? 'grabbing' : 'grab',
         padding: isMobile ? '6px' : '10px',
-        background: 'rgba(17, 17, 17, 0.8)',
-        backdropFilter: 'blur(8px)',
         touchAction: 'none',
         zIndex,
       }}
@@ -203,19 +202,24 @@ const BoardItem: React.FC<BoardItemProps> = ({
               e.stopPropagation();
               onDelete(id);
             }}
-            className="p-1.5 bg-red-500/80 hover:bg-red-600 rounded-full transition-colors duration-300"
+            className="p-1.5 bg-red-500/80 hover:bg-red-600/90 rounded-full 
+              transition-colors duration-300 shadow-lg 
+              hover:shadow-red-500/20 transform hover:scale-105"
           >
             <Trash2 size={isMobile ? 12 : 14} className="text-white" />
           </button>
         </div>
       )}
+      
       <div className="flex items-center justify-center h-full">
         {renderComponent()}
       </div>
       
       {showControls && (
         <div
-          className="absolute bottom-0 right-0 bg-primary hover:bg-primary/80 cursor-se-resize transition-colors duration-300"
+          className="absolute bottom-0 right-0 bg-primary/80 hover:bg-primary 
+            cursor-se-resize transition-all duration-300 
+            shadow-lg shadow-primary/20"
           onMouseDown={handleResizeStart}
           onTouchStart={handleTouchResizeStart}
           style={{

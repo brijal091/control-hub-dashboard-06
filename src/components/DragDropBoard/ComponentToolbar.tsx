@@ -24,16 +24,21 @@ const ToolbarItem: React.FC<ToolbarItemProps> = ({ type, icon, label }) => {
   return (
     <div
       ref={drag}
-      className={`p-3 m-1 md:p-4 md:m-2 rounded-lg bg-gray-800/80 backdrop-blur-sm flex flex-col items-center justify-center cursor-grab border border-gray-700/50 hover:border-primary/50 hover:bg-gray-700/80 transition-all duration-300 ${
-        isDragging ? 'opacity-50 scale-105' : 'opacity-100'
-      }`}
+      className={`p-3 m-1 md:p-4 md:m-2 rounded-xl backdrop-blur-md flex flex-col items-center justify-center cursor-grab 
+        bg-gradient-to-br from-gray-900/90 to-gray-800/90 
+        border border-gray-700/30 hover:border-primary/40
+        shadow-lg shadow-primary/5 hover:shadow-primary/10
+        transform transition-all duration-300 
+        ${isDragging ? 'opacity-50 scale-105 rotate-3' : 'opacity-100 hover:scale-105'}`}
       style={{ 
         width: isMobile ? '70px' : '100px', 
         height: isMobile ? '70px' : '100px' 
       }}
     >
-      <div className="text-primary mb-1 md:mb-2">{icon}</div>
-      <span className="text-xs md:text-sm text-center text-gray-300">{label}</span>
+      <div className="text-primary mb-1 md:mb-2 transform transition-transform group-hover:scale-110">{icon}</div>
+      <span className="text-xs md:text-sm text-center bg-gradient-to-r from-gray-100 to-gray-300 bg-clip-text text-transparent font-medium">
+        {label}
+      </span>
     </div>
   );
 };
@@ -46,8 +51,16 @@ export const ComponentToolbar: React.FC<ComponentToolbarProps> = ({ onComponentA
   const isMobile = useIsMobile();
   
   return (
-    <div className={`${isMobile ? 'w-32 h-full' : 'w-36'} bg-gradient-to-b from-gray-800 to-gray-900 p-2 flex flex-col items-center overflow-y-auto shadow-xl`}>
-      <h2 className="text-white text-xs md:text-sm font-medium mb-1 md:mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Components</h2>
+    <div className={`${isMobile ? 'w-32 h-full' : 'w-36'} 
+      bg-gradient-to-br from-gray-900/95 to-gray-800/95 
+      border-r border-gray-700/30
+      p-2 flex flex-col items-center overflow-y-auto 
+      shadow-xl backdrop-blur-lg`}>
+      <h2 className="text-white text-xs md:text-sm font-medium mb-3 md:mb-4 
+        bg-gradient-to-r from-primary via-primary/80 to-primary/60 
+        bg-clip-text text-transparent tracking-wide">
+        Components
+      </h2>
       <ToolbarItem 
         type={ComponentTypes.SWITCH} 
         icon={<ToggleRight size={isMobile ? 24 : 32} />} 
